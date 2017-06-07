@@ -1,0 +1,6 @@
+CREATE TABLE quotes (
+  id SERIAL PRIMARY KEY,
+  authors VARCHAR NOT NULL,
+  body TEXT NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT now()
+)
