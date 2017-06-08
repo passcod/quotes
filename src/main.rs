@@ -19,10 +19,12 @@ extern crate serde_derive;
 extern crate serde_json;
 
 use diesel::QueryResult;
+use rocket::config::{Config, Environment};
 use rocket::request::Form;
 use rocket::response::{NamedFile, Redirect};
 use rocket_contrib::Template;
 use std::collections::HashMap;
+use std::env;
 use std::path::{Path, PathBuf};
 
 mod db;
@@ -107,7 +109,29 @@ fn create(form: Form<NewQuote>) -> Result<Redirect, String> {
 }
 
 fn main() {
-    rocket::ignite()
+    let webenv = env::var("WEB_ENV")
+        .unwrap_or("development".into());
+
+    let port = env::var("PORT")
+        .map_err(|e| format!("{}", e))
+        .and_then(|p|
+            u16::from_str_radix(&p, 10)
+            .map_err(|e| format!("{}", e))
+            .map(|p| p.into())
+        )
+        .unwrap_or(8000);
+
+    let config = Config::build(match webenv.as_str() {
+            "production" => Environment::Production,
+            "staging" => Environment::Staging,
+            _ => Environment::Development,
+        })
+        .address("0.0.0.0")
+        .port(port)
+        .finalize()
+        .expect("Error configuring server");
+
+    rocket::custom(config, true)
         .mount("/", routes![
             assets,
             create,
