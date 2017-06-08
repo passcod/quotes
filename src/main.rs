@@ -12,11 +12,14 @@ extern crate dotenv;
 extern crate lazy_static;
 extern crate pulldown_cmark;
 extern crate rocket;
+extern crate rocket_contrib;
 extern crate serde_json;
 
 use diesel::QueryResult;
 use rocket::request::Form;
-use rocket::response::Redirect;
+use rocket::response::{NamedFile, Redirect};
+use rocket_contrib::Template;
+use std::path::{Path, PathBuf};
 
 mod db;
 mod markdown;
@@ -29,14 +32,24 @@ fn index() -> QueryResult<String> {
     }).collect())
 }
 
+#[get("/assets/<file..>")]
+fn assets(file: PathBuf) -> Option<NamedFile> {
+    NamedFile::open(Path::new("assets/").join(file)).ok()
+}
+
 #[derive(FromForm)]
 struct NewQuote {
     authors: String,
     body: String,
 }
 
-#[post("/", data = "<form>")]
-fn create(form: Form<NewQuote>) -> () {
+#[get("/new")]
+fn new() -> Template {
+  Template::render("new", &())
+}
+
+#[post("/new", data = "<form>")]
+fn create(form: Form<NewQuote>) -> Result<Redirect, String> {
     let quote = form.get();
 
     let body = markdown::render(&quote.body);
@@ -46,10 +59,12 @@ fn create(form: Form<NewQuote>) -> () {
         .collect::<Vec<String>>();
 
     let conn = db::connect();
+    db::create(&conn, authors.to_vec(), body)?;
+    Ok(Redirect::to("/"))
 }
 
 fn main() {
     rocket::ignite()
-        .mount("/", routes![index, create])
+        .mount("/", routes![index, assets, new, create])
         .launch();
 }

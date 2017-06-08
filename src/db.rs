@@ -1,4 +1,5 @@
 use chrono::{DateTime, UTC};
+use diesel;
 use diesel::prelude::*;
 use diesel::pg::PgConnection;
 use dotenv::dotenv;
@@ -39,7 +40,7 @@ pub struct Quote {
 #[derive(Insertable)]
 #[table_name="quotes"]
 struct NewQuote<'a> {
-    pub authors: Vec<&'a str>,
+    pub authors: serde_json::Value,
     pub body: &'a str,
 }
 
@@ -49,13 +50,14 @@ pub fn list(conn: &PgConnection) -> QueryResult<Vec<Quote>> {
     quotes.load::<Quote>(conn)
 }
 
-// pub fn create(conn: &PgConnection, authors: Vec<String>, body: String) -> Quote {
-//     let new_post = NewQuote {
-//         title: title,
-//         body: body,
-//     };
-// 
-//     diesel::insert(&new_post).into(posts::table)
-//         .get_result(conn)
-//         .expect("Error saving new post")
-// }
+pub fn create(conn: &PgConnection, authors: Vec<String>, body: String) -> Result<Quote, String> {
+    let new_quote = NewQuote {
+        authors: serde_json::to_value(authors)
+            .map_err(|e| format!("Error saving new quote: {}", e))?,
+        body: &body,
+    };
+
+    diesel::insert(&new_quote).into(quotes::table)
+        .get_result(conn)
+        .map_err(|e| format!("Error saving new quote: {}", e))
+}
