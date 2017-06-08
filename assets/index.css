@@ -30,3 +30,62 @@ article {
     padding: 1em 2em;
     color: white;
 }
+
+article p {
+    display: inline;
+}
+
+.body {
+    font-family: serif;
+    position: relative;
+    font-size: 1.5em;
+    font-style: italic;
+    margin: 0.5em 1em 1em;
+}
+
+.body em, .body i {
+    font-style: normal;
+}
+
+.body::before {
+    content: '“';
+    font-size: 2rem;
+    font-style: normal;
+    font-weight: bold;
+    position: absolute;
+    top: -0.3em;
+    left: -0.7em;
+}
+
+.body::after {
+    content: '”';
+    font-size: 2rem;
+    font-style: normal;
+    font-weight: bold;
+    position: absolute;
+    bottom: -0.3em;
+    right: -0.7em;
+}
+
+.authors p {
+    color: white;
+}
+
+.authors {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.authors::before {
+    content: '— ';
+}
+
+.permalink {
+    display: block;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    margin-top: 0.5em;
+}
+
+.permalink:hover {
+    opacity: 1;
+}
