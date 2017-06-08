@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Quotes</title>
+        <link rel="stylesheet" href="/assets/index.css">
+    </head>
+    <body>
+        <h1><a href="/">Quotes</a></h1>
+        <h3><a href="/new">» New quote</a></h3>
+
+        {{#each quotes}}
+            <article>
+                <div class="body">{{{body}}}</div>
+                <div class="authors">{{{authors}}}</div>
+                <a href="/{{id}}">
+                    <date datetime="{{created_at}}">{{created_at}}</date>
+                </a>
+            </article>
+        {{/each}}
+    </body>
+</html>

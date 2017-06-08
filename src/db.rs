@@ -29,7 +29,7 @@ pub fn connect() -> ArcConn {
     Arc::new(conn)
 }
 
-#[derive(Queryable)]
+#[derive(Queryable, Serialize)]
 pub struct Quote {
     pub id: i32,
     pub authors: serde_json::Value,
@@ -48,6 +48,12 @@ pub fn list(conn: &PgConnection) -> QueryResult<Vec<Quote>> {
     use self::quotes::dsl::*;
 
     quotes.load::<Quote>(conn)
+}
+
+pub fn get(conn: &PgConnection, qid: i32) -> QueryResult<Quote> {
+    use self::quotes::dsl::*;
+
+    quotes.find(qid).first::<Quote>(conn)
 }
 
 pub fn create(conn: &PgConnection, authors: Vec<String>, body: String) -> Result<Quote, String> {
